@@ -62,4 +62,20 @@ module Checkable
       @reports << report
     end
   end
+
+  module Extension
+    attr_accessor :check_reports
+
+    def run_checks
+      checker = Checkable::Checker.new
+      checker.check self
+      @check_reports = checker.reports.first
+      self # allow chaining
+    end
+
+    def failing_checks  ; @check_reports.failing.sort_by { |c| c.class.name } ; end
+    def passing_checks  ; @check_reports.passing.sort_by { |c| c.class.name } ; end
+    def failing_checks? ; failing_checks.any?                                 ; end
+    def passing_checks? ; passing_checks.any?                                 ; end
+  end
 end
