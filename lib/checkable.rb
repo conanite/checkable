@@ -7,8 +7,17 @@ module Checkable
     @@checks[type] << check
   end
 
+  def self.collect_checks_for type, collector
+    if type
+      collector.concat @@checks[type.name]
+      collect_checks_for type.superclass, collector
+    else
+      collector
+    end
+  end
+
   def self.checks_for type
-    @@checks[type]
+    collect_checks_for type, []
   end
 
   class FocusOnCheckClass
@@ -55,10 +64,8 @@ module Checkable
 
     def check object
       report = Report.new object
-      checks = Checkable.checks_for object.class.name
-      checks.each { |check|
-        report.run check if @focus.enabled?(check)
-      }
+      checks = Checkable.checks_for object.class
+      checks.each { |check| report.run check if @focus.enabled?(check) }
       @reports << report
     end
   end
